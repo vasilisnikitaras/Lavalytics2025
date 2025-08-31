@@ -140,7 +140,16 @@ body.dark-mode .date {
   transition: color 0.3s ease;
 }
 
-    
+ footer p:last-child {
+  margin-top: 10px;
+  font-style: italic;
+  color: #888;
+}
+
+body.dark-mode footer p:last-child {
+  color: #ccc;
+}
+   
   </style>
 </head>
 <body>
@@ -166,11 +175,16 @@ body.dark-mode .date {
       <a href="https://vasiverse.com/vasiverse-weather" target="_blank">🔗 Explore VasiVerse Forecast Simulator</a>
     </section>
 
-    <footer>
-      <p>This dashboard is independently developed and not affiliated with the City of Laval. All data is presented for informational purposes only. Powered by VasiVerse.</p>
-    </footer>
-  </div>
   
+    <section class="cta">
+      <a href="https://vasiverse.com/vasiverse-weather" target="_blank">🔗 Explore VasiVerse Forecast Simulator</a>
+    </section>
+
+   <footer>
+  <p>This dashboard is independently developed and not affiliated with the City of Laval. All data is presented for informational purposes only. Powered by VasiVerse.</p>
+  <p>Built with 💡 by <strong>Vasilis & Copilot</strong> — a creative collaboration.</p>
+</footer>
+
   <section class="chart">
   <h2>📈 Engagement Chart</h2>
   <canvas id="engagementChart" width="400" height="200"></canvas>
