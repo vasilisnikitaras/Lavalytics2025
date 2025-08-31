@@ -120,6 +120,12 @@
   background-color: #2c3e50 !important;
 }
 
+    .date {
+  font-weight: bold;
+  font-size: 1.1em;
+  color: #2c3e50;
+}
+
     
   </style>
 </head>
@@ -400,13 +406,15 @@ document.getElementById("toggle-dark").addEventListener("click", () => {
   }
 });
 
+  </script>
 
+<script>
   const today = new Date();
   const options = { year: 'numeric', month: 'long', day: 'numeric' };
-  document.getElementById('currentDate').textContent = today.toLocaleDateString('en-US', options);
+  document.getElementById('currentDate').textContent = today.toLocaleDateString('en-CA', options);
+</script>
 
 
-    
-  </script>
+  
 </body>
 </html>
