@@ -1,30 +1,49 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Laval Engagement Dashboard | VasiVerse</title>
-  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <link rel="icon" href="favicon.ico" type="image/x-icon" />
   <style>
+    :root {
+      --bg-light: #f4f6f8;
+      --bg-dark: #1e1e1e;
+      --card-light: #ffffff;
+      --card-dark: #2c3e50;
+      --text-light: #333;
+      --text-dark: #f4f6f8;
+    }
+
     body {
       font-family: 'Segoe UI', sans-serif;
-      background: #f4f6f8;
-      color: #333;
+      background: var(--bg-light);
+      color: var(--text-light);
       margin: 0;
       padding: 20px;
+      transition: background 0.3s ease, color 0.3s ease;
+    }
+
+    body.dark-mode {
+      background: var(--bg-dark);
+      color: var(--text-dark);
     }
 
     .dashboard {
       max-width: 800px;
       margin: auto;
-      background: white;
+      background: var(--card-light);
       padding: 20px;
       border-radius: 10px;
       box-shadow: 0 0 15px rgba(0,0,0,0.1);
+      transition: background 0.3s ease;
+    }
+
+    body.dark-mode .dashboard {
+      background: var(--card-dark);
     }
 
     h1, h2 {
-      color: #2c3e50;
       margin-bottom: 10px;
     }
 
@@ -44,6 +63,25 @@
       padding: 8px;
       background: #ecf0f1;
       border-radius: 6px;
+    }
+
+    body.dark-mode li {
+      background: #34495e;
+    }
+
+    button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      background: #2ecc71;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    button:hover {
+      background: #27ae60;
     }
 
     .cta a {
@@ -72,12 +110,17 @@
       .dashboard {
         padding: 15px;
       }
-
       .cta a {
         width: 100%;
         text-align: center;
       }
     }
+    
+    body.dark-mode canvas {
+  background-color: #2c3e50 !important;
+}
+
+    
   </style>
 </head>
 <body>
@@ -95,6 +138,9 @@
       <ul id="weather-info"></ul>
     </section>
 
+    <button id="trigger-data">🔄 Trigger Data Mode</button>
+    <button id="toggle-dark">🌓 Toggle Dark Mode</button>
+
     <section class="cta">
       <a href="https://vasiverse.com/vasiverse-weather" target="_blank">🔗 Explore VasiVerse Forecast Simulator</a>
     </section>
@@ -103,39 +149,262 @@
       <p>This dashboard is independently developed and not affiliated with the City of Laval. All data is presented for informational purposes only. Powered by VasiVerse.</p>
     </footer>
   </div>
+  
+  <section class="chart">
+  <h2>📈 Engagement Chart</h2>
+  <canvas id="engagementChart" width="400" height="200"></canvas>
+</section>
 
-  <script>
-    const userStats = {
-      activeUsers: 3,
-      engagedSessions: 8,
-      engagementRate: "61.54%",
-      avgEngagementTime: "3m 15s",
-      eventCount: 148,
-      revenue: "$0.00"
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  function generateRandomStats() {
+    return {
+      activeUsers: Math.floor(Math.random() * 10),
+      engagedSessions: Math.floor(Math.random() * 20),
+      engagementRate: `${(Math.random() * 100).toFixed(2)}%`,
+      avgEngagementTime: `${Math.floor(Math.random() * 5)}m ${Math.floor(Math.random() * 60)}s`,
+      eventCount: Math.floor(Math.random() * 200),
+      conversions: Math.floor(Math.random() * 10),
+      revenue: `$${(Math.random() * 100).toFixed(2)}`
     };
+  }
 
-    const weatherInfo = {
-      temperature: "22°C",
-      condition: "Partly Cloudy",
-      humidity: "68%",
-      wind: "12 km/h NW"
+  function generateRandomWeather() {
+    const conditions = ["Sunny", "Rainy", "Cloudy", "Stormy", "Partly Cloudy"];
+    return {
+      temperature: `${Math.floor(Math.random() * 35)}°C`,
+      condition: conditions[Math.floor(Math.random() * conditions.length)],
+      humidity: `${Math.floor(Math.random() * 100)}%`,
+      wind: `${Math.floor(Math.random() * 20)} km/h NW`
     };
+  }
 
+  function renderStats(stats) {
     const userStatsList = document.getElementById("user-stats");
-    Object.entries(userStats).forEach(([key, value]) => {
+    userStatsList.innerHTML = "";
+    Object.entries(stats).forEach(([key, value]) => {
       const li = document.createElement("li");
       const label = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
       li.textContent = `${label}: ${value}`;
       userStatsList.appendChild(li);
     });
+    renderChart(stats.engagedSessions, stats.conversions);
+  }
 
+  function renderWeather(weather) {
     const weatherList = document.getElementById("weather-info");
-    Object.entries(weatherInfo).forEach(([key, value]) => {
+    weatherList.innerHTML = "";
+    Object.entries(weather).forEach(([key, value]) => {
       const li = document.createElement("li");
       const label = key.charAt(0).toUpperCase() + key.slice(1);
       li.textContent = `${label}: ${value}`;
       weatherList.appendChild(li);
     });
+
+    const condition = weather.condition.toLowerCase();
+    if (condition.includes("sunny")) {
+      document.body.style.background = "#fffbe6";
+    } else if (condition.includes("rainy")) {
+      document.body.style.background = "#d0e6f7";
+    } else if (condition.includes("stormy")) {
+      document.body.style.background = "#cfcfcf";
+    } else if (condition.includes("cloudy")) {
+      document.body.style.background = "#e0e0e0";
+    } else {
+      document.body.style.background = "#f4f6f8";
+    }
+  }
+
+  let chartInstance;
+  function renderChart(sessions, conversions) {
+    const ctx = document.getElementById("engagementChart").getContext("2d");
+    if (chartInstance) chartInstance.destroy();
+    chartInstance = new Chart(ctx, {
+      type: "bar",
+      data: {
+        labels: ["Sessions", "Conversions"],
+        datasets: [{
+          label: "Engagement",
+          data: [sessions, conversions],
+          backgroundColor: ["#3498db", "#2ecc71"]
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: { display: false },
+          title: {
+            display: true,
+            text: "Engagement Overview",
+            color: document.body.classList.contains("dark-mode") ? "#f4f6f8" : "#2c3e50"
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            ticks: {
+              color: document.body.classList.contains("dark-mode") ? "#f4f6f8" : "#2c3e50"
+            }
+          },
+          x: {
+            ticks: {
+              color: document.body.classList.contains("dark-mode") ? "#f4f6f8" : "#2c3e50"
+            }
+          }
+        }
+      }
+    });
+  }
+
+  document.getElementById("trigger-data").addEventListener("click", () => {
+    const newStats = generateRandomStats();
+    const newWeather = generateRandomWeather();
+    renderStats(newStats);
+    renderWeather(newWeather);
+  });
+
+  document.getElementById("toggle-dark").addEventListener("click", () => {
+    document.body.classList.toggle("dark-mode");
+    if (chartInstance) chartInstance.options.plugins.title.color = document.body.classList.contains("dark-mode") ? "#f4f6f8" : "#2c3e50";
+    chartInstance.options.scales.x.ticks.color = document.body.classList.contains("dark-mode") ? "#f4f6f8" : "#2c3e50";
+    chartInstance.options.scales.y.ticks.color = document.body.classList.contains("dark-mode") ? "#f4f6f8" : "#2c3e50";
+    chartInstance.update();
+  });
+
+  setInterval(() => {
+    document.getElementById("trigger-data").click();
+  }, 30000);
+
+  document.getElementById("trigger-data").click();
+</script>
+
+  
+  
+  
+  
+
+  <script>
+    function generateRandomStats() {
+      return {
+        activeUsers: Math.floor(Math.random() * 10),
+        engagedSessions: Math.floor(Math.random() * 20),
+        engagementRate: `${(Math.random() * 100).toFixed(2)}%`,
+        avgEngagementTime: `${Math.floor(Math.random() * 5)}m ${Math.floor(Math.random() * 60)}s`,
+        eventCount: Math.floor(Math.random() * 200),
+        revenue: `$${(Math.random() * 100).toFixed(2)}`
+      };
+    }
+
+    function generateRandomWeather() {
+      const conditions = ["Sunny", "Rainy", "Cloudy", "Stormy", "Partly Cloudy"];
+      return {
+        temperature: `${Math.floor(Math.random() * 35)}°C`,
+        condition: conditions[Math.floor(Math.random() * conditions.length)],
+        humidity: `${Math.floor(Math.random() * 100)}%`,
+        wind: `${Math.floor(Math.random() * 20)} km/h NW`
+      };
+    }
+
+    function renderStats(stats) {
+      const userStatsList = document.getElementById("user-stats");
+      userStatsList.innerHTML = "";
+      Object.entries(stats).forEach(([key, value]) => {
+        const li = document.createElement("li");
+        const label = key.replace(/([A-Z])/g, ' $1').replace(/^./, str => str.toUpperCase());
+        li.textContent = `${label}: ${value}`;
+        userStatsList.appendChild(li);
+      });
+    }
+
+    function renderWeather(weather) {
+      const weatherList = document.getElementById("weather-info");
+      weatherList.innerHTML = "";
+      Object.entries(weather).forEach(([key, value]) => {
+        const li = document.createElement("li");
+        const label = key.charAt(0).toUpperCase() + key.slice(1);
+        li.textContent = `${label}: ${value}`;
+        weatherList.appendChild(li);
+      });
+
+      // Weather-based theme
+      const condition = weather.condition.toLowerCase();
+      if (condition.includes("sunny")) {
+        document.body.style.background = "#fffbe6";
+      } else if (condition.includes("rainy")) {
+        document.body.style.background = "#d0e6f7";
+      } else if (condition.includes("stormy")) {
+        document.body.style.background = "#cfcfcf";
+      } else if (condition.includes("cloudy")) {
+        document.body.style.background = "#e0e0e0";
+      } else {
+        document.body.style.background = "#f4f6f8";
+      }
+    }
+
+    document.getElementById("trigger-data").addEventListener("click", () => {
+      const newStats = generateRandomStats();
+      const newWeather = generateRandomWeather();
+      renderStats(newStats);
+      renderWeather(newWeather);
+    });
+
+    document.getElementById("toggle-dark").addEventListener("click", () => {
+      document.body.classList.toggle("dark-mode");
+    });
+
+    setInterval(() => {
+      document.getElementById("trigger-data").click();
+    }, 30000);
+
+    // Initial render
+    document.getElementById("trigger-data").click();
+    
+    
+    
+    function updateChartColors() {
+  if (!chartInstance) return;
+  const dark = document.body.classList.contains("dark-mode");
+  chartInstance.options.plugins.title.color = dark ? "#f4f6f8" : "#2c3e50";
+  chartInstance.options.scales.x.ticks.color = dark ? "#f4f6f8" : "#2c3e50";
+  chartInstance.options.scales.y.ticks.color = dark ? "#f4f6f8" : "#2c3e50";
+  chartInstance.update();
+}
+
+document.getElementById("toggle-dark").addEventListener("click", () => {
+  document.body.classList.toggle("dark-mode");
+  updateChartColors();
+});
+
+    chartInstance = new Chart(ctx, {
+  type: "line",
+  data: {
+    labels: ["00:00", "06:00", "12:00", "18:00", "24:00"],
+    datasets: [{
+      label: "Sessions",
+      data: [3, 7, 12, 9, 4],
+      borderColor: "#3498db",
+      backgroundColor: "rgba(52,152,219,0.2)",
+      fill: true
+    }]
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      legend: { display: false },
+      title: {
+        display: true,
+        text: "Sessions Over Time",
+        color: document.body.classList.contains("dark-mode") ? "#f4f6f8" : "#2c3e50"
+      }
+    },
+    scales: {
+      x: { ticks: { color: "#888" } },
+      y: { beginAtZero: true, ticks: { color: "#888" } }
+    }
+  }
+});
+
+    
   </script>
 </body>
 </html>
