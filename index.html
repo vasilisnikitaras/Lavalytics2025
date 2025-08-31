@@ -126,7 +126,8 @@
 <body>
   <div class="dashboard">
     <h1>Laval Engagement Dashboard</h1>
-    <p class="date">Date: August 29, 2025</p>
+<p class="date">Date: <span id="currentDate"></span></p>
+
 
     <section class="stats">
       <h2>📊 User Stats</h2>
@@ -278,11 +279,6 @@
   document.getElementById("trigger-data").click();
 </script>
 
-  
-  
-  
-  
-
   <script>
     function generateRandomStats() {
       return {
@@ -403,6 +399,12 @@ document.getElementById("toggle-dark").addEventListener("click", () => {
     }
   }
 });
+
+
+  const today = new Date();
+  const options = { year: 'numeric', month: 'long', day: 'numeric' };
+  document.getElementById('currentDate').textContent = today.toLocaleDateString('en-US', options);
+
 
     
   </script>
